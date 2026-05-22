@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ProjectData, getProjects, saveProjects } from '../lib/store';
-import { Settings, Plus, Trash2, Edit2, Briefcase, ChevronLeft, LayoutDashboard, Clock, Activity, Calendar, DollarSign, UserCog, Link as LinkIcon, AlertCircle, MessageSquareText } from 'lucide-react';
+import { Settings, Plus, Trash2, Edit2, Briefcase, ChevronLeft, LayoutDashboard, Clock, Activity, Calendar, DollarSign, UserCog, Link as LinkIcon, AlertCircle, MessageSquareText, QrCode, FileText, CheckCircle, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -8,6 +8,7 @@ export default function AdminPanel() {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'dash' | 'form'>('dash');
+  const [qrModalData, setQrModalData] = useState<ProjectData | null>(null);
 
   const [formData, setFormData] = useState<Partial<ProjectData>>({
     id: '',
@@ -21,6 +22,8 @@ export default function AdminPanel() {
     budget: '',
     priority: 'Medium',
     projectManager: '',
+    contractUrl: '',
+    contractSigned: false,
   });
 
   useEffect(() => {
@@ -47,7 +50,7 @@ export default function AdminPanel() {
     saveProjects(updatedProjects);
     setProjects(updatedProjects);
     setEditingId(null);
-    setFormData({ id: '', clientName: '', projectName: '', deadline: '', stage: '', progress: 0, screenshots: [], updates: [], budget: '', priority: 'Medium', projectManager: '' });
+    setFormData({ id: '', clientName: '', projectName: '', deadline: '', stage: '', progress: 0, screenshots: [], updates: [], budget: '', priority: 'Medium', projectManager: '', contractUrl: '', contractSigned: false });
     setViewMode('dash');
   };
 
@@ -67,7 +70,7 @@ export default function AdminPanel() {
 
   const openNewForm = () => {
     setEditingId(null);
-    setFormData({ id: '', clientName: '', projectName: '', deadline: '', stage: '', progress: 0, screenshots: [], updates: [], budget: '', priority: 'Medium', projectManager: '' });
+    setFormData({ id: '', clientName: '', projectName: '', deadline: '', stage: '', progress: 0, screenshots: [], updates: [], budget: '', priority: 'Medium', projectManager: '', contractUrl: '', contractSigned: false });
     setViewMode('form');
   };
 
@@ -207,7 +210,7 @@ export default function AdminPanel() {
                               </div>
                            </div>
                            
-                           <div className="p-8 space-y-6 bg-black/30 relative z-10">
+                           <div className="p-8 space-y-6 bg-black/30 relative z-10 border-b border-white/5">
                              <div className="flex flex-col gap-3 justify-between text-xs font-semibold text-zinc-400">
                                <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-indigo-400" /> Deadline: <span className="text-zinc-200">{p.deadline}</span></span>
                                <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-cyan-400" /> Stage: <span className="text-zinc-200 truncate">{p.stage}</span></span>
@@ -224,6 +227,13 @@ export default function AdminPanel() {
                                  </div>
                                </div>
                              </div>
+                           </div>
+                           
+                           {/* Actions Footer */}
+                           <div className="p-4 bg-zinc-950/80 flex gap-2 relative z-10">
+                             <button onClick={(e) => { e.stopPropagation(); setQrModalData(p); }} className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white text-[10px] uppercase tracking-widest font-bold rounded-xl flex items-center justify-center gap-2 transition-colors border border-white/5">
+                               <QrCode className="w-4 h-4 text-white" /> Share Access QRs
+                             </button>
                            </div>
                         </div>
                       ))}
@@ -372,14 +382,29 @@ export default function AdminPanel() {
                     <h3 className="text-sm uppercase tracking-[0.2em] text-white font-bold mb-6 flex items-center gap-3">
                       <LinkIcon className="w-5 h-5 text-indigo-400" /> Assets & Media
                     </h3>
-                    <div className="space-y-3">
-                      <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold ml-1 flex items-center gap-2 mb-2">Screenshot URLs (Comma Separated)</label>
-                      <textarea 
-                        value={formData.screenshots?.join(', ')}
-                        onChange={e => setFormData({...formData, screenshots: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
-                        className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-5 text-white focus:outline-none focus:border-indigo-500 focus:bg-white/5 transition-all h-32 leading-relaxed" 
-                        placeholder="https://images.unsplash.com/photo-123, https://images.unsplash.com/photo-456"
-                      />
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold ml-1 flex items-center gap-2 mb-2">Screenshot URLs (Comma Separated)</label>
+                        <textarea 
+                          value={formData.screenshots?.join(', ')}
+                          onChange={e => setFormData({...formData, screenshots: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})}
+                          className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-5 text-white focus:outline-none focus:border-indigo-500 focus:bg-white/5 transition-all h-32 leading-relaxed" 
+                          placeholder="https://images.unsplash.com/photo-123, https://images.unsplash.com/photo-456"
+                        />
+                      </div>
+                      
+                      <div className="space-y-3 border-t border-white/5 pt-6 relative">
+                         <div className="absolute top-0 right-0 p-2 bg-indigo-500/10 rounded-bl-2xl rounded-tr-2xl"><FileText className="w-4 h-4 text-indigo-400" /></div>
+                         <label className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold ml-1 flex items-center gap-2 mb-2">Main Contract Document (URL)</label>
+                         <p className="text-xs text-zinc-400 mb-2 font-medium">Upload or paste the original signed contract for this project to bind it to the digital workspace.</p>
+                         <input 
+                           type="text" 
+                           value={formData.contractUrl || ''}
+                           onChange={e => setFormData({...formData, contractUrl: e.target.value})}
+                           className="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-indigo-500 focus:bg-white/5 transition-all" 
+                           placeholder="https://docs.google.com/document/d/... or secure CDN link"
+                         />
+                      </div>
                     </div>
                   </div>
 
@@ -470,6 +495,78 @@ export default function AdminPanel() {
             )}
           </AnimatePresence>
         </div>
+        
+        {/* QR Code Modal for sharing */}
+        <AnimatePresence>
+           {qrModalData && (
+             <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="fixed inset-0 z-50 flex items-center justify-center p-4"
+             >
+                <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setQrModalData(null)}></div>
+                <motion.div 
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  className="bg-zinc-950 border border-white/10 p-8 rounded-[2rem] w-full max-w-2xl relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden"
+                >
+                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 to-cyan-400"></div>
+                   
+                   <div className="flex justify-between items-center mb-8">
+                     <div>
+                       <h3 className="text-2xl font-display font-bold text-white leading-none">Access QR Codes</h3>
+                       <p className="text-zinc-400 text-sm mt-2">Show these to {qrModalData.clientName}</p>
+                     </div>
+                     <button onClick={() => setQrModalData(null)} className="p-2 border border-white/10 rounded-full hover:bg-white/10 transition-colors">
+                        <X className="w-5 h-5 text-zinc-400" />
+                     </button>
+                   </div>
+                   
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {/* Standard Portal QR */}
+                      <div className="flex flex-col items-center bg-black/40 p-6 rounded-2xl border border-white/5">
+                         <div className="bg-white p-4 rounded-xl mb-6 flex-shrink-0 relative overflow-hidden group">
+                            {/* Simplistic QR placeholder using an API for actual real generation */}
+                            <img 
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + '/?clientLogin=' + qrModalData.id)}`} 
+                              alt="Portal QR" 
+                              className="w-40 h-40 object-contain"
+                            />
+                            <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                               <QrCode className="w-8 h-8 text-indigo-500 drop-shadow-md" />
+                            </div>
+                         </div>
+                         <h4 className="font-bold text-white mb-2 uppercase tracking-widest text-xs flex items-center gap-2">
+                           <LayoutDashboard className="w-4 h-4 text-cyan-400" /> Workspace Overview
+                         </h4>
+                         <p className="text-zinc-500 text-xs text-center">Scans directly to the client's main project dashboard.</p>
+                      </div>
+                      
+                      {/* Contract Signature QR */}
+                      <div className="flex flex-col items-center bg-black/40 p-6 rounded-2xl border border-white/5 relative overflow-hidden">
+                         <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/20 rounded-bl-full blur-[20px] pointer-events-none"></div>
+                         <div className="bg-white p-4 rounded-xl mb-6 flex-shrink-0 relative group">
+                            <img 
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + '/?clientLogin=' + qrModalData.id + '&view=contract')}`} 
+                              alt="Contract QR" 
+                              className="w-40 h-40 object-contain"
+                            />
+                            <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                               <FileText className="w-8 h-8 text-indigo-600 drop-shadow-md" />
+                            </div>
+                         </div>
+                         <h4 className="font-bold text-white mb-2 uppercase tracking-widest text-xs flex items-center gap-2">
+                           <FileText className="w-4 h-4 text-indigo-400" /> Digital Contract
+                         </h4>
+                         <p className="text-zinc-500 text-xs text-center">Scans directly to the legal signature environment.</p>
+                      </div>
+                   </div>
+                </motion.div>
+             </motion.div>
+           )}
+        </AnimatePresence>
       </main>
     </div>
   );

@@ -4,7 +4,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-10 border-b border-white/5">
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-24 pb-16 border-b border-transparent">
       {/* Immersive Image Background */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div 

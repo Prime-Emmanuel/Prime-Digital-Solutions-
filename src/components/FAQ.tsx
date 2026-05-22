@@ -33,7 +33,7 @@ export default function FAQ() {
   };
 
   return (
-    <section className="py-24 md:py-32 bg-zinc-950 relative z-10 border-t border-white/5">
+    <section className="py-24 md:py-32 bg-zinc-950 relative z-10 rounded-[2rem] md:rounded-[3rem] my-16 mx-4 md:mx-8 lg:mx-12 border border-white/10 shadow-2xl">
       <div className="max-w-4xl mx-auto px-6 md:px-12">
         <div className="text-center mb-16 md:mb-20">
           <span className="text-sm font-semibold tracking-widest text-indigo-400 uppercase mb-4 inline-block drop-shadow-md">

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ProjectData, getProjects } from '../lib/store';
-import { Key, LayoutDashboard, Settings, Bell, Clock, Calendar, MessageSquareText, Image as ImageIcon, ChevronLeft, LogOut, TrendingUp, CheckCircle2, MoreVertical, Link as LinkIcon } from 'lucide-react';
+import { ProjectData, getProjects, saveProjects } from '../lib/store';
+import { Key, LayoutDashboard, Settings, Bell, Clock, Calendar, MessageSquareText, Image as ImageIcon, ChevronLeft, LogOut, TrendingUp, CheckCircle2, MoreVertical, Link as LinkIcon, FileText, PenTool } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function ClientPortal() {
   const [accessCode, setAccessCode] = useState('');
@@ -10,15 +10,63 @@ export default function ClientPortal() {
   const [error, setError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'contract'>('overview');
+  const [signing, setSigning] = useState(false);
+  const [signstamp, setSignstamp] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const loginCode = params.get('clientLogin');
+    const viewParam = params.get('view');
+    
+    if (viewParam === 'contract') {
+       setActiveTab('contract');
+    }
+
+    if (loginCode) {
+       const p = getProjects().find(proj => proj.id === loginCode);
+       if (p) {
+         setProject(p);
+         sessionStorage.setItem('activeClientProject', loginCode);
+       }
+       return;
+    }
+
     const saved = sessionStorage.getItem('activeClientProject');
     if (saved) {
       const p = getProjects().find(proj => proj.id === saved);
       if (p) setProject(p);
     }
-  }, []);
+  }, [location.search]);
+
+  // Sync contract updates seamlessly when signed
+  const handleSignContract = () => {
+     if (signing || project?.contractSigned) return;
+     setSigning(true);
+     setTimeout(() => {
+        setSigning(false);
+        setSignstamp(true);
+        
+        // Save to store
+        if (project) {
+          const updatedProject = {
+            ...project,
+            contractSigned: true,
+            contractSignedBy: project.clientName,
+            contractSignedAt: new Date().toISOString()
+          };
+          setProject(updatedProject);
+          const allProjects = getProjects();
+          const pIndex = allProjects.findIndex(p => p.id === project.id);
+          if (pIndex !== -1) {
+             allProjects[pIndex] = updatedProject;
+             saveProjects(allProjects);
+          }
+        }
+     }, 1000);
+  };
 
   const handleAccess = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,14 +181,11 @@ export default function ClientPortal() {
           <h3 className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-6 ml-4 flex items-center space-x-2">
             <span>Client Workspace</span>
           </h3>
-          <button className="w-full flex items-center gap-3 px-4 py-3.5 bg-blue-50 text-blue-700 rounded-2xl transition-colors font-medium">
+          <button onClick={() => setActiveTab('overview')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-colors font-medium ${activeTab === 'overview' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}>
             <LayoutDashboard className="w-5 h-5" /> Project Overview
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-colors font-medium">
-            <Calendar className="w-5 h-5" /> Timeline & Events
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-2xl transition-colors font-medium">
-            <MessageSquareText className="w-5 h-5" /> Communication Logs
+          <button onClick={() => setActiveTab('contract')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-colors font-medium ${activeTab === 'contract' ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}>
+            <FileText className="w-5 h-5" /> Digital Contract
           </button>
         </nav>
         <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-3">
@@ -234,11 +279,12 @@ export default function ClientPortal() {
 
         {/* Dashboard Content */}
         <div className="flex-1 p-6 md:p-8 lg:p-12">
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-6xl mx-auto space-y-8"
-          >
+          {activeTab === 'overview' ? (
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-6xl mx-auto space-y-8"
+            >
             <div>
               <h2 className="text-3xl lg:text-4xl font-display font-bold text-slate-900 tracking-tight">Good day, {project.clientName.split(' ')[0]}.</h2>
               <p className="text-slate-500 mt-2 text-base">Here is the latest progress on <strong className="text-slate-700 font-medium">{project.projectName}</strong>.</p>
@@ -385,6 +431,103 @@ export default function ClientPortal() {
                </div>
             </div>
           </motion.div>
+          ) : (
+             <motion.div
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.4 }}
+               className="max-w-4xl mx-auto"
+             >
+                <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+                   {project.contractSigned && (
+                     <div className="absolute top-0 right-0 p-4">
+                        <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 border border-emerald-100">
+                          <CheckCircle2 className="w-4 h-4" /> Signed & Complete
+                        </div>
+                     </div>
+                   )}
+                   
+                   <div className="text-center mb-10 pb-8 border-b border-slate-100">
+                      <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-blue-100">
+                         <FileText className="w-8 h-8 text-blue-600" />
+                      </div>
+                      <h2 className="text-3xl font-display font-bold text-slate-800 mb-2">Service Agreement</h2>
+                      <p className="text-slate-500 font-medium">Project: {project.projectName}</p>
+                   </div>
+                   
+                   <div className="prose prose-slate max-w-none mb-12">
+                      <p>This document serves as the formal Service Agreement between <strong>Prime Digital Solutions</strong> and <strong>{project.clientName}</strong> for the delivery of the specialized software project identified as <strong>{project.projectName}</strong>.</p>
+                      
+                      <h3>1. Scope of Work</h3>
+                      <p>Prime Digital Solutions agrees to provide the deliverables outlined during the initial consultation. The project involves high-performance architecture, clean user interfaces, and robust systems aimed at meeting the core objectives set forth by the client.</p>
+                      
+                      <h3>2. Deliverables & Timeline</h3>
+                      <p>The estimated timeframe for completion is set by the active deadline: <strong>{project.deadline}</strong>. Both parties commit to timely communication to ensure deadlines are met.</p>
+                      
+                      <h3>3. Financial Obligations</h3>
+                      <p>The client agrees to the budget structure established. A deposit may be required before the commencement of work, with the remainder due upon final project handoff.</p>
+                      
+                      {project.contractUrl && (
+                        <div className="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
+                           <div>
+                             <h4 className="font-bold text-slate-800 text-sm mb-1">Original Signed Contract</h4>
+                             <p className="text-xs text-slate-500">View the original legally binding document.</p>
+                           </div>
+                           <a href={project.contractUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white border border-slate-200 shadow-sm text-blue-600 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors">
+                             View Document
+                           </a>
+                        </div>
+                      )}
+                   </div>
+                   
+                   <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 relative overflow-hidden">
+                      <h3 className="font-display font-medium text-lg text-slate-800 mb-6 flex items-center gap-2">
+                        <PenTool className="w-5 h-5 text-indigo-500" /> Electronic Signature
+                      </h3>
+                      
+                      {project.contractSigned ? (
+                         <div className="flex flex-col items-center justify-center p-8 bg-white rounded-2xl border border-slate-200 relative overflow-hidden">
+                            <motion.div 
+                              initial={signstamp ? { opacity: 0, scale: 2 } : false}
+                              animate={{ opacity: 1, scale: 0.9 }}
+                              transition={{ type: "spring", damping: 12 }}
+                              className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 rotate-[-15deg] z-0"
+                            >
+                               <div className="border-4 border-red-600 text-red-600 text-6xl font-black uppercase tracking-[0.3em] p-6 rounded-3xl mix-blend-multiply">
+                                 COMPLETED
+                               </div>
+                            </motion.div>
+                            <div className="relative z-10 text-center">
+                              <p className="font-display text-4xl text-slate-800 italic mb-2 font-medium" style={{ fontFamily: 'Georgia, serif' }}>{project.contractSignedBy}</p>
+                              <div className="h-px w-64 bg-slate-200 mb-4 mx-auto"></div>
+                              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Signed on <span className="text-blue-600">{new Date(project.contractSignedAt!).toLocaleDateString()}</span></p>
+                            </div>
+                         </div>
+                      ) : (
+                         <div className="flex flex-col items-center justify-center">
+                            <button 
+                              onClick={handleSignContract}
+                              disabled={signing}
+                              className="group relative px-10 py-5 bg-white border-2 border-indigo-100 hover:border-indigo-500 rounded-2xl transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/20 w-full max-w-sm"
+                            >
+                               {signing ? (
+                                 <span className="flex items-center justify-center gap-2 text-indigo-500 font-bold uppercase tracking-widest text-sm">
+                                   <span className="w-4 h-4 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></span> Signing...
+                                 </span>
+                               ) : (
+                                 <div className="flex flex-col items-center gap-1">
+                                   <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">Click to sign as</span>
+                                   <span className="text-indigo-600 font-black text-xl italic" style={{ fontFamily: 'Georgia, serif' }}>{project.clientName}</span>
+                                 </div>
+                               )}
+                            </button>
+                            <p className="text-[10px] text-slate-400 mt-4 max-w-xs text-center leading-relaxed">By clicking the button above, you agree to the terms listed in the Service Agreement.</p>
+                         </div>
+                      )}
+                   </div>
+                </div>
+             </motion.div>
+          )}
         </div>
       </main>
     </div>

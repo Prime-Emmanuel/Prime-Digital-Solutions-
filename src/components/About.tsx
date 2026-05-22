@@ -10,7 +10,7 @@ export default function About() {
   ];
 
   return (
-    <section id="about" className="py-24 md:py-32 relative z-20 bg-[#121214] rounded-t-[3rem] md:rounded-t-[6rem] -mt-12 border-t border-white/10 overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+    <section id="about" className="py-24 md:py-32 relative z-20 bg-[#121214] rounded-[2rem] md:rounded-[3rem] my-16 mx-4 md:mx-8 lg:mx-12 border border-white/10 overflow-hidden shadow-2xl">
       {/* Decorative Glow */}
       <div className="absolute top-0 inset-x-0 flex justify-center">
         <div className="absolute top-[-50px] w-64 h-64 bg-indigo-500/20 blur-[80px] rounded-full"></div>

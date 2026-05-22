@@ -91,8 +91,8 @@ export default function Navbar() {
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '100%', transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              exit={{ x: '100%', transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] } }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
               className="relative w-full max-w-[85vw] sm:max-w-sm h-full bg-white border-l border-slate-200 shadow-[0_0_50px_rgba(0,0,0,0.2)] flex flex-col overflow-y-auto"
             >
               <div className="absolute inset-0 bg-blue-50/30 pointer-events-none"></div>

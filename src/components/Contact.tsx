@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 export default function Contact() {
   return (
-    <section id="contact" className="py-24 md:py-32 relative z-50 bg-zinc-950 rounded-t-[3rem] md:rounded-t-[6rem] -mt-12 border-t border-white/10 overflow-hidden shadow-[0_-20px_50px_rgba(0,0,0,0.5)]">
+    <section id="contact" className="py-24 md:py-32 relative z-50 bg-[#0a0a0c] rounded-[2rem] md:rounded-[3rem] my-16 mx-4 md:mx-8 lg:mx-12 border border-white/10 overflow-hidden shadow-2xl">
       {/* Background Glow */}
       <div className="absolute top-[0%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-[140px] pointer-events-none"></div>
       <div className="absolute top-[-50px] left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/20 blur-[80px] rounded-full pointer-events-none"></div>

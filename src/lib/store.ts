@@ -16,6 +16,10 @@ export interface ProjectData {
   budget?: string;
   priority?: 'Low' | 'Medium' | 'High';
   projectManager?: string;
+  contractUrl?: string;
+  contractSigned?: boolean;
+  contractSignedBy?: string;
+  contractSignedAt?: string;
 }
 
 const STORAGE_KEY = 'prime_digital_projects';
