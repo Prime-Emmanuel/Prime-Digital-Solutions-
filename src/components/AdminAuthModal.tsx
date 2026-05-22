@@ -39,9 +39,8 @@ export default function AdminAuthModal({ isOpen, onClose }: AdminAuthModalProps)
     try {
        const inputHash = await hashString(villageName);
        // The target hash should ideally be stored in environment variables (VITE_ADMIN_VILLAGE_HASH)
-       // Here we use a hardcoded default hash for "admin" (for demo purposes) OR check env
-       // SHA-256 of "admin" is "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
-       let targetHash = import.meta.env.VITE_ADMIN_VILLAGE_HASH || '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+       // Here we use a hardcoded default fallback for "mpalla".
+       let targetHash = import.meta.env.VITE_ADMIN_VILLAGE_HASH || 'mpalla';
        
        // If the user configured a plaintext password instead of a hash in their environment variable,
        // we hash it at runtime so it still evaluates correctly.
