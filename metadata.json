@@ -1,0 +1,6 @@
+{
+  "name": "Prime Digital Solutions",
+  "description": "A modern, minimalist digital agency portfolio for Prime Digital Solutions.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
