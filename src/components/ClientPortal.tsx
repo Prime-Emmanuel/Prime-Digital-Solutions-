@@ -277,6 +277,22 @@ export default function ClientPortal() {
           </div>
         </header>
 
+        {/* Mobile Navigation Tabs */}
+        <div className="lg:hidden bg-white/80 backdrop-blur-xl border-b border-slate-200 p-4 flex gap-2 sticky top-20 z-20">
+          <button 
+            onClick={() => setActiveTab('overview')} 
+            className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors ${activeTab === 'overview' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-transparent'}`}
+          >
+            <LayoutDashboard className="w-4 h-4" /> Overview
+          </button>
+          <button 
+            onClick={() => setActiveTab('contract')} 
+            className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-colors ${activeTab === 'contract' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-transparent'}`}
+          >
+            <FileText className="w-4 h-4" /> Contract
+          </button>
+        </div>
+
         {/* Dashboard Content */}
         <div className="flex-1 p-6 md:p-8 lg:p-12">
           {activeTab === 'overview' ? (
